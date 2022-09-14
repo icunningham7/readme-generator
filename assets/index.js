@@ -127,17 +127,6 @@ const licenseQuestions = [
 ];
 
 
-
-// Ask basic questions
-// Ask for title and description (short or detailed)
-// Add to README object
-// Ask if extra sessions are need
-// If yes, add TOC to the README object
-// If no, don't add TOC
-// Ask additional questions
-// Add to README object
-
-
 // TODO: Create a function to write README file
 function writeToFile(fileName, data) {
     fs.writeFile(fileName, data, (err) => 
@@ -154,7 +143,7 @@ function init() {
 
 async function evaluateAnswers(answers) {
     const { title, descriptionYN, featureYN, installationYN, usageYN, creditsYN, licenseYN } = answers;
-    let readme = `#${title}\n\n`;
+    let readme = `# ${title}\n\n`;
 
     let dsc = (descriptionYN) ?  detailedDescription : shortDescription;
 
@@ -186,25 +175,25 @@ function buildReadmeSection(answers, section, style = 'basic') {
     let readmeSection = '';
     switch (style) {
         case 'ulist':
-            markup = '-';
+            markup = '- ';
             break;
         case 'olist':
-            markup = '*';
+            markup = '* ';
             break;
         case 'quote':
-            markup = '>';
+            markup = '> ';
             break;
         case 'h2':
-            markup = '##';
+            markup = '## ';
             break;
         case 'h3':
-            markup = '###';
+            markup = '### ';
             break;
         default:
             break;
     }
 
-    readmeSection += `##${section}\n`;
+    readmeSection += `## ${section}\n`;
     for (const answer of Object.values(answers)) {
         if (style === 'ulist' || style === 'olist') {
             readmeSection += answer.split(',').reduce((str, item) => str += `${markup}${item.trim()}\n`, '');
@@ -218,22 +207,21 @@ function buildReadmeSection(answers, section, style = 'basic') {
 }
 
 function addTOC(feature, installation, usage, credit, license) {
-    console.log('in TOC');
     let TOC = '';
     if (feature) {
-        TOC += '-[Features](#features)\n';
+        TOC += '- [Features](#features)\n';
     }
     if (installation) {
-        TOC += '-[Installation](#installation)\n';
+        TOC += '- [Installation](#installation)\n';
     }
     if (usage) {
-        TOC += '-[Usage](#usage)\n';
+        TOC += '- [Usage](#usage)\n';
     }
     if (credit) {
-        TOC += '-[Credits](#credits)\n';
+        TOC += '- [Credits](#credits)\n';
     }
     if (license) {
-        TOC += '-[License](#license)\n';
+        TOC += '- [License](#license)\n';
     }
 
     TOC += '\n\n'
