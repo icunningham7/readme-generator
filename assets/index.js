@@ -32,8 +32,18 @@ const basicQuestions = [
     },
     {
         type: 'confirm',
-        message: 'Has anyone else contributed to this project?',
+        message: 'Do you want to have others contribute to this project?',
         name: 'contributeYN',
+    },
+    {
+        type: 'confirm',
+        message: 'Do you want to include instructions for testing?',
+        name: 'testYN',
+    },
+    {
+        type: 'confirm',
+        message: 'Do you want to include a section for answering questions?',
+        name: 'questionYN',
     },
     {
         type: 'confirm',
@@ -125,12 +135,20 @@ const testQuestions = [
         name: 'projectTest'
     }
 ];
-const questionQuestions = [
+const githubQuestions = [
     {
         type: 'input',
-        message: 'Are there any questions for this project?',
-        default: 'Credit list...',
-        name: 'projectQuestion'
+        message: 'What is your Github username?',
+        default: '(input: Github username)',
+        name: 'projectQuestionProfile'
+    }
+];
+const emailQuestions = [
+    {
+        type: 'input',
+        message: 'Who should users contact if they have questions for this project?',
+        default: 'Contact... (input: email address)',
+        name: 'projectQuestionEmail'
     }
 ];
 const licenseQuestions = [
@@ -195,12 +213,15 @@ async function evaluateAnswers(answers) {
 
     if (testYN) {
         let testAns = await inquirer.prompt(testQuestions);
-        document.sections.push(buildDocumentSection(testAns, 'Tests'));
+        document.sections.push(buildDocumentSection(testAns, 'Tests', 'olist'));
     }
 
     if (questionYN) {
-        let questionAns = await inquirer.prompt(questionQuestions);
-        document.sections.push(buildDocumentSection(questionAns, 'Questions'));
+        let githubQuestionAns = await inquirer.prompt(githubQuestions);
+        document.sections.push(buildDocumentSection(githubQuestionAns, 'Questions', 'gitLink'));
+        let emailQuestionAns = await inquirer.prompt(emailQuestions);
+        document.sections.push(buildDocumentSection(emailQuestionAns, '', 'emailContact'));
+
     }
 
     if (licenseYN) {
@@ -245,44 +266,55 @@ function buildDocumentSection(answers, section, style = 'basic') {
             break;
     }
 
-    documentSection.text += `## ${section}\n`;
+    if (section) {
+        documentSection.text += `## ${section}\n`;
+    }
     for (const answer of Object.values(answers)) {
         if (style === 'ulist' || style === 'olist') {
             documentSection.text += answer.split(',').reduce((str, item) => str += `${markup}${item.trim()}\n`, '');
 
+        } else if (style === 'gitLink') {
+            documentSection.text += `Github: [github.com/${answer}](https://github.com/${answer})\n`;
+
+        } else if (style === 'emailContact') {
+            documentSection.text += `Please contact me at [${answer}](mailto:${answer}) if you have any questions.\n`;
+
         } else {
             documentSection.text += `${markup}${answer}\n`;
         }
+
         if (section === 'License') {
-            switch (section) {
+            switch (answers.projectLicense) {
                 case 'GNU AGPLv3':
-                    documentSection.text += 'Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.\n';
+                    documentSection.text += '\nPermissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.\n';
                     break;
                 case 'GNU GPLv3':
-                    documentSection.text += 'Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.\n';
+                    documentSection.text += '\nPermissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.\n';
                     break;
                 case 'GNU LGPLv3':
-                    documentSection.text += 'Permissions of this copyleft license are conditioned on making available complete source code of licensed works and modifications under the same license or the GNU GPLv3. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work through interfaces provided by the licensed work may be distributed under different terms and without source code for the larger work.\n';
+                    documentSection.text += '\nPermissions of this copyleft license are conditioned on making available complete source code of licensed works and modifications under the same license or the GNU GPLv3. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work through interfaces provided by the licensed work may be distributed under different terms and without source code for the larger work.\n';
                     break;
                 case 'Mozilla Public License 2.0':
-                    documentSection.text += 'Permissions of this weak copyleft license are conditioned on making available source code of licensed files and modifications of those files under the same license (or in certain cases, one of the GNU licenses). Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work may be distributed under different terms and without source code for files added in the larger work.\n';
+                    documentSection.text += '\nPermissions of this weak copyleft license are conditioned on making available source code of licensed files and modifications of those files under the same license (or in certain cases, one of the GNU licenses). Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work may be distributed under different terms and without source code for files added in the larger work.\n';
                     break;
                 case 'Apache License 2.0':
-                    documentSection.text += 'A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
+                    documentSection.text += '\nA permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
                     break;
                 case 'MIT License':
-                    documentSection.text += 'A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
+                    documentSection.text += '\nA short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
                     break;
                 case 'Boost Software License 1.0':
-                    documentSection.text += 'A simple permissive license only requiring preservation of copyright and license notices for source (and not binary) distribution. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
+                    documentSection.text += '\nA simple permissive license only requiring preservation of copyright and license notices for source (and not binary) distribution. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
                     break;
                 case 'The Unlicense':
-                    documentSection.text += 'A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
+                    documentSection.text += '\nA license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.\n';
                     break;
 
                 default:
                     break;
             }
+            console.log(documentSection.text);
+
         }
     }
     documentSection.text += `\n\n`;
